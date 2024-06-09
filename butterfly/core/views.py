@@ -17,8 +17,7 @@ from butterfly.core.throttles import FriendRequestThrottle
 
 class RegisterAPIView(APIView):
     """
-    Accept only email from the payload and create the user to accommodate
-    the requirements.
+    Create a new user
     """
 
     permission_classes = [AllowAny]
@@ -29,13 +28,18 @@ class RegisterAPIView(APIView):
         if serializer.is_valid():
             profile = serializer.save()
 
+            # Have to create a token here
             Token.objects.create(user=profile)
-            return Response({"detail": "User created successfully"})
+            return Response(serializer.data)
 
         return Response(serializer.errors)
 
 
 class LoginAPIView(APIView):
+    """
+    Generate a token for the given email address
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -56,6 +60,12 @@ class LoginAPIView(APIView):
 
 
 class StatusAPIView(APIView):
+    """
+    API for creating a new Friend. By default creatin an Friend object will be
+    set to "SEND" status on the database. But it can be changable to ACCEPT or REJECT
+    based via the PATCH method
+    """
+
     throttle_classes = [FriendRequestThrottle]
 
     def get_object(self, pk):
@@ -84,6 +94,10 @@ class StatusAPIView(APIView):
 
 
 class FriendsListViewSet(ModelViewSet):
+    """
+    Accepted user list of the logged in user
+    """
+
     def list(self, request):
         queryset = Friend.objects.filter(
             owner=request.user, status=Friend.StatusChoice.ACCEPT
@@ -93,6 +107,10 @@ class FriendsListViewSet(ModelViewSet):
 
 
 class ReceivedListViewSet(ModelViewSet):
+    """
+    Received user list of the logged in user
+    """
+
     def list(self, request):
         queryset = Friend.objects.filter(
             owner=request.user, status=Friend.StatusChoice.SEND
@@ -102,10 +120,18 @@ class ReceivedListViewSet(ModelViewSet):
 
 
 class UserListPagination(PageNumberPagination):
+    """
+    Make the list just 10 items per request.
+    """
+
     page_size = 10
 
 
 class UserListAPIView(ListAPIView):
+    """
+    Search the user using the name or email
+    """
+
     queryset = Profile.objects.order_by("-name")
     serializer_class = ProfileSerializer
     filter_backends = [SearchFilter]
