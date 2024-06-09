@@ -34,6 +34,7 @@ class Profile(AbstractBaseUser):
         max_length=255,
         unique=True,
     )
+    name = models.CharField(max_length=250, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
@@ -59,3 +60,28 @@ class Profile(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+
+
+class Friend(models.Model):
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, related_name="friends"
+    )
+
+    class StatusChoice(models.TextChoices):
+        ACCEPT = "ACCEPT"
+        SEND = "SEND"
+        REJECT = "REJECT"
+
+    status = models.CharField(
+        max_length=100, choices=StatusChoice.choices, default=StatusChoice.SEND
+    )
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str(self):
+        return f"{self.owner} - friend {self.profile}"
+
+    class Meta:
+        unique_together = ("owner", "profile")

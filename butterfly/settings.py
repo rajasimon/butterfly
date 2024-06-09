@@ -38,6 +38,8 @@ ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 INSTALLED_APPS = [
     "butterfly.core",
     "rest_framework",
+    "rest_framework.authtoken",
+    "django_filters",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -128,11 +130,10 @@ AUTH_USER_MODEL = "core.Profile"
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.BasicAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
     ],
 }
 

@@ -6,17 +6,23 @@ from butterfly.core.models import Profile
 class EmailPasswordBackend(BaseBackend):
 
     def authenticate(self, request, email=None, password=None):
-        print(email, password)
+        """
+        When given the email return the user profile. Password is optional if
+        it's given then assert the truths of it.
+        """
         # Use the email get the profile
         profile = Profile.objects.filter(email=email).first()
 
         if not profile:
             return None
 
-        if profile.check_password(password):
-            return profile
+        if password:
+            if profile.check_password(password):
+                return profile
 
-        return None
+            return None
+
+        return profile
 
     def get_user(self, user_id):
         try:
